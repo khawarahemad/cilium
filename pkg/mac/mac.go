@@ -32,6 +32,12 @@ func (m Uint64MAC) String() string {
 // It is a comparable value type: two MACs may be compared with == and a MAC may
 // be used as a map key. Its zero value means "unset", which is how a device
 // carrying no layer 2 address, such as an L3/NOARP device, is represented.
+//
+// MAC can also be used in CRD-embedded structs. It is serialized as a string
+// and validated by the API server on admission.
+//
+// +kubebuilder:validation:Type=string
+// +kubebuilder:validation:Format=mac
 type MAC [6]byte
 
 // String returns the string representation of m, or the empty string if m is
@@ -76,6 +82,20 @@ func ParseMAC(s string) (MAC, error) {
 	}
 
 	return MAC(ha), nil
+}
+
+// ParseMACOrUnset is [ParseMAC] with the empty string parsed as an unset MAC
+// rather than as an error, matching [MAC.UnmarshalText].
+//
+// It is meant for the sources which report a MAC address optionally, such as
+// the cloud provider interface and statuses in a CiliumNode: an absent value
+// is legitimate there, and only a malformed one is rejected. Consumers which
+// do require a MAC must reject the unset one themselves.
+func ParseMACOrUnset(s string) (MAC, error) {
+	if s == "" {
+		return MAC{}, nil
+	}
+	return ParseMAC(s)
 }
 
 // FromHardwareAddr converts ha to a MAC. Like [ParseMAC] it only accepts an
