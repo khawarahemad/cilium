@@ -227,6 +227,48 @@ kpr_v4_dsr_lb3_mtu_post_geneve = (
     IPerror(bytes(kpr_v4_dsr_lb3_mtu[IP])[:28])
 )
 
+kpr_v4_dsr_lb3_mtu2 = (
+    Ether(src=host_mac_addr, dst=mac_one) /
+    IP(src=v4_ext_one, dst=v4_svc_one) /
+    TCP(sport=tcp_src_one, dport=tcp_svc_three, flags="") /
+    b"foobar"
+)
+
+kpr_v4_dsr_lb3_mtu2_post_option = (
+    Ether(src=host_mac_addr, dst=mac_one) /
+    IP(src=v4_ext_one, dst=v4_pod_one, ttl=63,
+       options=[bytes(IPOption_DSR(port=tcp_svc_three, addr=v4_svc_one))]) /
+    TCP(sport=tcp_src_one, dport=tcp_dst_three, flags="") /
+    b"foobar"
+)
+
+kpr_v4_dsr_lb3_mtu2_post_option_xdp = (
+    Ether(src=mac_one, dst=mac_two) /
+    IP(src=v4_ext_one, dst=v4_pod_one, ttl=63,
+       options=[bytes(IPOption_DSR(port=tcp_svc_three, addr=v4_svc_one))]) /
+    TCP(sport=tcp_src_one, dport=tcp_dst_three, flags="") /
+    b"foobar"
+)
+
+kpr_v4_dsr_lb3_mtu2_post_geneve = (
+    Ether(src=host_mac_addr, dst=mac_one) /
+    IP(src=v4_ext_one, dst=v4_pod_one) /
+    TCP(sport=tcp_src_one, dport=tcp_dst_three, flags="") /
+    b"foobar"
+)
+
+kpr_v4_dsr_lb3_mtu2_post_geneve_xdp = (
+    Ether(src=mac_one, dst=mac_two) /
+    IP(src=v4_node_one, dst=v4_node_two, id=0, ttl=63) /
+    UDP(sport=24364,dport=6081, chksum=0) /
+    GENEVE(vni=2,proto=0x6558,
+           options=[Geneve_DSR_Opt4(addr=v4_svc_one, port=tcp_svc_three)]) /
+    Ether(src=host_mac_addr, dst=mac_one) /
+    IP(src=v4_ext_one, dst=v4_pod_one) /
+    TCP(sport=tcp_src_one, dport=tcp_dst_three, flags="") /
+    b"foobar"
+)
+
 kpr_v4_dsr_remote_node_reply = (
     Ether(src=mac_two, dst=mac_one) /
     IP(src=v4_pod_one, dst=v4_ext_one) /
