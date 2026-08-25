@@ -793,6 +793,8 @@ int kpr_v4_dsr_lb3_mtu_check(__maybe_unused const struct __ctx_buff *ctx)
 	ct_entry = map_lookup_elem(get_ct_map4(&tuple), &tuple);
 	if (!ct_entry)
 		test_fatal("no CT entry for DSR connection found");
+	if (!ct_entry->need_dsr_info)
+		test_fatal("CT entry doesn't have need_dsr_info flag");
 
 	test_finish();
 }
@@ -895,6 +897,22 @@ int kpr_v4_dsr_lb3_mtu2_check(__maybe_unused const struct __ctx_buff *ctx)
 			   sizeof(kpr_v4_dsr_lb3_mtu2_post_option));
 # endif
 #endif
+
+	struct ipv4_ct_tuple tuple;
+	struct ct_entry *ct_entry;
+
+	tuple.flags = TUPLE_F_SERVICE;
+	tuple.nexthdr = IPPROTO_TCP;
+	tuple.daddr = v4_svc_one;
+	tuple.saddr = v4_ext_one;
+	tuple.sport = tcp_svc_three;
+	tuple.dport = tcp_src_one;
+
+	ct_entry = map_lookup_elem(get_ct_map4(&tuple), &tuple);
+	if (!ct_entry)
+		test_fatal("no CT entry for DSR connection found");
+	if (ct_entry->need_dsr_info)
+		test_fatal("CT entry still has need_dsr_info flag");
 
 	test_finish();
 }
