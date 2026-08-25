@@ -371,7 +371,7 @@ func loadAndRecordComplexity(
 			// we can't easily retrieve the max stack size. We'll just return
 			// it for bpf-next, where it's likely already the highest value
 			// anyway.
-			if kv == kernelVersionNetNext {
+			if kv == kernelVersion72 || kv == kernelVersionNetNext {
 				var stackDepth int
 				stackDepth, stackDepthIndex, err = parseStackDepth(s, p.VerifierLog, lastLineIndex, lastOff)
 				if err != nil {
@@ -486,6 +486,7 @@ type kernelVersion int
 const (
 	kernelVersion510 kernelVersion = iota
 	kernelVersion61
+	kernelVersion72
 	kernelVersionNetNext
 	_kernelVersionMax
 )
@@ -496,6 +497,8 @@ func (kv kernelVersion) String() string {
 		return "510"
 	case kernelVersion61:
 		return "61"
+	case kernelVersion72:
+		return "72"
 	case kernelVersionNetNext:
 		return "netnext"
 	default:
@@ -509,6 +512,8 @@ func kernelVersionFromString(s string) (kernelVersion, error) {
 		return kernelVersion510, nil
 	case "61":
 		return kernelVersion61, nil
+	case "72":
+		return kernelVersion72, nil
 	case "netnext":
 		return kernelVersionNetNext, nil
 	default:
